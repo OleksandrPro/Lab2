@@ -1,0 +1,11 @@
+##Basic gitignore template
+*.sln
+*.config
+*.csproj
+*.gitattributes
+Properties/
+.vs/
+/obj
+/bin
+/packages
+/TestResults

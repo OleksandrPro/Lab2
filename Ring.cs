@@ -6,14 +6,14 @@ using System.Threading.Tasks;
 
 namespace Test
 {
-    public class Ring<T>
+    public class Ring
     {
         private class Node
         {
-            public T _data;
+            public int _data;
             public Node Next { get; set; }
             public Node Previous { get; set; }
-            public Node(T data)
+            public Node(int data)
             {
                 _data = data;
                 Next = null;
@@ -21,12 +21,49 @@ namespace Test
             }
         }
         Node _current;
-
         public Ring()
         {
             _current = null;
         }
-        public void AddItem(T item)
+        public Ring(int[] data)
+        {
+            if (data == null)
+            {
+                _current = null;
+            }
+            else
+            {
+                foreach (int item in data)
+                {
+                    AddItem(item);
+                }
+            }
+        }
+        public Ring(Ring originalRing)
+        {
+            if (originalRing._current == null)
+            {
+                _current = null;
+            }
+            else
+            {
+                _current = new Node(originalRing._current._data);
+                Node originalNode = originalRing._current.Next;
+                Node currentNode = _current;
+
+                while (originalNode != originalRing._current)
+                {
+                    Node newNode = new Node(originalNode._data);
+                    currentNode.Next = newNode;
+                    newNode.Previous = currentNode;
+                    currentNode = newNode;
+                    originalNode = originalNode.Next;
+                }
+                currentNode.Next = _current;
+                _current.Previous = currentNode;
+            }
+        }
+        public void AddItem(int item)
         {
             Node newNode = new Node(item);
             if (_current == null)
@@ -58,40 +95,146 @@ namespace Test
             }
             while (currentIterable != _current);
         }
-        public static T operator >(Ring<T> ring, T item)
+
+        private int Count()
         {
-            return ring._current._data;
+            if (_current == null)
+            {
+                return 0;
+            }
+            int count = 1;
+            Node currentNode = _current.Next;
+            while (currentNode != _current)
+            {
+                count++;
+                currentNode = currentNode.Next;
+            }
+            return count;
         }
-        public static T operator <(Ring<T> ring, T item)
+        public override bool Equals(object obj)
         {
-            return ring._current._data;
-        }
-        public static Ring<T> operator <(Ring<T> ring, T item)
-        {
-            Ring<T> result = new Ring<T>();
-            return result;
-        }
-        public static Ring<T> operator +(Ring<T> ring1, Ring<T> ring2)
-        {
-            Ring<T> result = new Ring<T>();
-            Node currentIterable1 = ring1._current;
-            Node currentIterable2 = ring1._current;
+            if (obj == null || GetType() != obj.GetType())
+            {
+                return false;
+            }
+            Ring otherRing = (Ring)obj;
+            if (Count() != otherRing.Count())
+            {
+                return false;
+            }
+            Node thisNode = _current;
+            Node otherNode = otherRing._current;
             do
             {
-                T item = currentIterable1._data + currentIterable2._data;
-                result.AddItem(item);
-                currentIterable1 = currentIterable1.Next;
-                currentIterable2 = currentIterable2.Next;
+                if (thisNode._data != otherNode._data)
+                {
+                    return false;
+                }
+                thisNode = thisNode.Next;
+                otherNode = otherNode.Next;
+            } while (thisNode != _current && otherNode != otherRing._current);
+            return true;
+        }
+        public override int GetHashCode()
+        {
+            return -1359422401 + EqualityComparer<Node>.Default.GetHashCode(_current);
+        }
+        public override string ToString()
+        {
+            String result = String.Empty;
+            if (_current != null)
+            {
+                Node currentIterable = _current;
+                do
+                {
+                    result += currentIterable._data + " ";
+                    currentIterable = currentIterable.Next;
+                }
+                while (currentIterable != _current);
             }
-            while (currentIterable1 != null);
             return result;
         }
-        public static Ring<T> operator -(Ring<T> ring1, Ring<T> ring2)
+        public static int operator <(Ring ring, int result)
         {
-            Ring<T> result = new Ring<T>();
+            if (ring._current != null)
+            {
+                result = ring._current._data;
+            }
+            return result;
+        }
+        public static int operator >(Ring ring, int result)
+        {
+            if (ring._current != null)
+            {
+                result = ring._current._data;
+                if (ring._current.Next == ring._current)
+                {
+                    ring._current = null;
+                }
+                else
+                {
+                    ring._current.Previous.Next = ring._current.Next;
+                    ring._current.Next.Previous = ring._current.Previous;
+                    ring._current = ring._current.Next;
+                }
+            }
+            return result;
+        }
+        public static Ring operator >>(Ring ring, int item)
+        {
+            ring.AddItem(item);
+            return ring;
+        }
+        public static Ring operator ++(Ring ring1)
+        {
+            Ring result = new Ring(ring1);
+            result._current = result._current.Next;
+            return result;
+        }
+        public static Ring operator --(Ring ring1)
+        {
+            Ring result = new Ring(ring1);
+            result._current = result._current.Previous;
+            return result;
+        }
+        public static bool operator true(Ring ring)
+        {
+            return ring._current == null;
+        }
+        public static bool operator false(Ring ring)
+        {
+            return ring._current == null;
+        }
+        public static bool operator ==(Ring ring1, Ring ring2)
+        {
+            return ring1.Equals(ring2);
+        }
+        public static bool operator !=(Ring ring1, Ring ring2)
+        {
+            return ring1 == ring2;
+        }
+        public static implicit operator Ring(int[] data)
+        {
+            return new Ring(data);
+        }
+        public static explicit operator Array(Ring ring)
+        {
+            if (ring == null)
+            {
+                return new int[0];
+            }
+            Ring copy = new Ring(ring);
+            int size = copy.Count();
+            int[] result = new int[size];
+            do
+            {
+                int counter = 0;
+                int newElement = 0;
+                newElement = copy > newElement;
+                result[counter++] = newElement;
+            }
+            while (copy._current != null);
             return result;
         }
     }
 }
-
-
