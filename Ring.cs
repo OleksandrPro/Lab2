@@ -27,15 +27,28 @@ namespace Test
         }
         public Ring(int[] data)
         {
-            if (data == null)
-            {
-                _current = null;
-            }
-            else
+            _current = null;
+
+            if (data != null)
             {
                 foreach (int item in data)
                 {
-                    AddItem(item);
+                    Node newNode = new Node(item);
+
+                    if (_current == null)
+                    {
+                        newNode.Next = newNode;
+                        newNode.Previous = newNode;
+                        _current = newNode;
+                    }
+                    else
+                    {
+                        Node updatePrev = _current.Previous;
+                        _current.Previous = newNode;
+                        newNode.Next = _current;
+                        updatePrev.Next = newNode;
+                        newNode.Previous = updatePrev;
+                    }
                 }
             }
         }
@@ -63,39 +76,6 @@ namespace Test
                 _current.Previous = currentNode;
             }
         }
-        public void AddItem(int item)
-        {
-            Node newNode = new Node(item);
-            if (_current == null)
-            {
-                _current = newNode;
-                _current.Next = newNode;
-                _current.Previous = newNode;
-            }
-            else
-            {
-                Node updatePrev = _current.Previous;
-                _current.Previous = newNode;
-                newNode.Next = _current;
-                updatePrev.Next = newNode;
-                newNode.Previous = updatePrev;
-            }
-        }
-        public void PrintAllElements()
-        {
-            if (_current == null)
-            {
-                return;
-            }
-            Node currentIterable = _current;
-            do
-            {
-                Console.WriteLine(currentIterable._data);
-                currentIterable = currentIterable.Next;
-            }
-            while (currentIterable != _current);
-        }
-
         private int Count()
         {
             if (_current == null)
@@ -154,6 +134,30 @@ namespace Test
             }
             return result;
         }
+        public static Ring CreateRingFromInput()
+        {
+            Console.WriteLine("Enter numbers of ring separating them with space:");
+            string input = Console.ReadLine();
+            string[] inputNumbers = input.Split(' ');
+            if (inputNumbers.Length == 0)
+            {
+                return new Ring();
+            }
+            int[] data = new int[inputNumbers.Length];
+            for (int i = 0; i < inputNumbers.Length; i++)
+            {
+                try
+                {
+                    int newElement = int.Parse(inputNumbers[i]);
+                    data[i] = newElement;
+                }
+                catch (Exception)
+                {
+                    return new Ring();
+                }
+            }
+            return new Ring(data);
+        }
         public static int operator <(Ring ring, int result)
         {
             if (ring._current != null)
@@ -182,7 +186,23 @@ namespace Test
         }
         public static Ring operator >>(Ring ring, int item)
         {
-            ring.AddItem(item);
+            Node newNode = new Node(item);
+
+            if (ring._current == null)
+            {
+                newNode.Next = newNode;
+                newNode.Previous = newNode;
+                ring._current = newNode;
+            }
+            else
+            {
+                Node updatePrev = ring._current.Previous;
+                ring._current.Previous = newNode;
+                newNode.Next = ring._current;
+                updatePrev.Next = newNode;
+                newNode.Previous = updatePrev;
+            }
+
             return ring;
         }
         public static Ring operator ++(Ring ring1)
