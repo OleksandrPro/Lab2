@@ -1,8 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Test
 {
@@ -160,27 +157,28 @@ namespace Test
         }
         public static int operator <(Ring ring, int result)
         {
-            if (ring._current != null)
+            if (ring._current == null)
             {
-                result = ring._current._data;
+                throw new InvalidOperationException("It's not possible to extract data from empty ring.");
             }
-            return result;
+            return ring._current._data;
         }
         public static int operator >(Ring ring, int result)
         {
-            if (ring._current != null)
+            if (ring._current == null)
             {
-                result = ring._current._data;
-                if (ring._current.Next == ring._current)
-                {
-                    ring._current = null;
-                }
-                else
-                {
-                    ring._current.Previous.Next = ring._current.Next;
-                    ring._current.Next.Previous = ring._current.Previous;
-                    ring._current = ring._current.Next;
-                }
+                throw new InvalidOperationException("It's not possible to extract data from empty ring.");
+            }
+            result = ring._current._data;
+            if (ring._current.Next == ring._current)
+            {
+                ring._current = null;
+            }
+            else
+            {
+                ring._current.Previous.Next = ring._current.Next;
+                ring._current.Next.Previous = ring._current.Previous;
+                ring._current = ring._current.Next;
             }
             return result;
         }
@@ -219,7 +217,7 @@ namespace Test
         }
         public static bool operator true(Ring ring)
         {
-            return ring._current == null;
+            return ring._current != null;
         }
         public static bool operator false(Ring ring)
         {
@@ -231,13 +229,13 @@ namespace Test
         }
         public static bool operator !=(Ring ring1, Ring ring2)
         {
-            return ring1 == ring2;
+            return !(ring1 == ring2);
         }
         public static implicit operator Ring(int[] data)
         {
             return new Ring(data);
         }
-        public static explicit operator Array(Ring ring)
+        public static explicit operator int[](Ring ring)
         {
             if (ring == null)
             {
@@ -246,15 +244,36 @@ namespace Test
             Ring copy = new Ring(ring);
             int size = copy.Count();
             int[] result = new int[size];
-            do
+            int counter = 0;
+            while (copy._current != null)
             {
-                int counter = 0;
-                int newElement = 0;
-                newElement = copy > newElement;
+                int newElement = copy > 0;
                 result[counter++] = newElement;
             }
-            while (copy._current != null);
             return result;
+        }
+        public Ring this[int n]
+        {
+            get
+            {
+                n = n % Count();
+                Ring result = new Ring(this);
+                if (n > 0)
+                {
+                    for (int i = 0; i < n; i++)
+                    {
+                        ++result;
+                    }
+                }
+                else if (n < 0)
+                {
+                    for (int i = 0; i > n; i--)
+                    {
+                        --result;
+                    }
+                }
+                return result;
+            }
         }
     }
 }
